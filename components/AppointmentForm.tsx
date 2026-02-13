@@ -54,7 +54,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ initialData, o
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className={inputStyle}
-                  placeholder="Ej: Maria García"
+                  placeholder="Ej: Juan"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
