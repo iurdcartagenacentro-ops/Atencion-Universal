@@ -1,0 +1,7 @@
+{
+  "name": "Atención Universal",
+  "description": "Una plataforma profesional para gestionar atendimientos de Facebook, programar visitas a iglesias y realizar seguimiento inteligente de nuevos miembros.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
