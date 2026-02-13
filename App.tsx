@@ -19,10 +19,16 @@ const App: React.FC = () => {
       const savedUser = localStorage.getItem('ecochurch_current_user');
       const savedApps = localStorage.getItem('ecochurch_appointments');
       
-      if (savedUser) setCurrentUser(JSON.parse(savedUser));
-      if (savedApps) setAppointments(JSON.parse(savedApps));
+      if (savedUser && savedUser !== "undefined") {
+        setCurrentUser(JSON.parse(savedUser));
+      }
+      if (savedApps && savedApps !== "undefined") {
+        setAppointments(JSON.parse(savedApps));
+      }
     } catch (e) {
       console.error("Error cargando datos de LocalStorage", e);
+      // Limpiar datos corruptos si existen
+      localStorage.removeItem('ecochurch_current_user');
     }
     setIsLoaded(true);
   }, []);
@@ -90,7 +96,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc]">
-      {/* Barra Lateral Web */}
       <aside className="w-full md:w-80 bg-white border-r border-slate-100 p-8 flex flex-col gap-10 shadow-sm z-20">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-[#2b44d3] rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg">
@@ -98,7 +103,7 @@ const App: React.FC = () => {
           </div>
           <div>
             <h2 className="font-black text-slate-900 leading-none uppercase tracking-tighter text-xl">Universal</h2>
-            <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em] mt-1">Plataforma Web</p>
+            <p className="text-[10px] text-blue-600 font-black uppercase tracking-[0.2em] mt-1">Gestión Web</p>
           </div>
         </div>
 
@@ -127,7 +132,6 @@ const App: React.FC = () => {
         </div>
       </aside>
 
-      {/* Contenido Dinámico */}
       <main className="flex-1 p-6 md:p-12 overflow-y-auto h-screen bg-[#f8fafc]">
         {view === 'dashboard' && <Dashboard appointments={appointments} onNew={() => setView('new')} onEdit={(apt) => { setEditingAppointment(apt); setView('edit'); }} onComplete={handleCompleteAppointment} />}
         {view === 'new' && <AppointmentForm onSave={handleCreateAppointment} onCancel={() => setView('dashboard')} />}
