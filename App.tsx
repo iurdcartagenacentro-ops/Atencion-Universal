@@ -19,18 +19,18 @@ const App: React.FC = () => {
       const savedUser = localStorage.getItem('ecochurch_current_user');
       const savedApps = localStorage.getItem('ecochurch_appointments');
       
-      if (savedUser && savedUser !== "undefined") {
+      if (savedUser && savedUser !== "undefined" && savedUser !== "null") {
         setCurrentUser(JSON.parse(savedUser));
       }
-      if (savedApps && savedApps !== "undefined") {
+      if (savedApps && savedApps !== "undefined" && savedApps !== "null") {
         setAppointments(JSON.parse(savedApps));
       }
     } catch (e) {
       console.error("Error cargando datos de LocalStorage", e);
-      // Limpiar datos corruptos si existen
       localStorage.removeItem('ecochurch_current_user');
+    } finally {
+      setIsLoaded(true);
     }
-    setIsLoaded(true);
   }, []);
 
   const handleLogin = (user: AuthUser) => {
@@ -75,7 +75,12 @@ const App: React.FC = () => {
     saveAppointments(updated);
   };
 
-  if (!isLoaded) return null;
+  if (!isLoaded) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
   if (!currentUser) return <AuthScreen onLogin={handleLogin} />;
 
   const NavItem = ({ icon, label, active, onClick }: { icon: any, label: string, active: boolean, onClick: () => void }) => (

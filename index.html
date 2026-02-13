@@ -9,8 +9,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script>
-        // Prevenir error "process is not defined" en despliegues web/Vercel
-        window.process = { env: { API_KEY: "" } };
+        // Prevenir errores "process is not defined" y fallos de dependencias Node en el navegador
+        window.process = { 
+            env: { API_KEY: "" },
+            nextTick: (cb) => setTimeout(cb, 0),
+            browser: true
+        };
     </script>
     <style>
         body {
