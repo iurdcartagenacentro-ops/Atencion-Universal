@@ -13,82 +13,71 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
   const [churchFilter, setChurchFilter] = useState<string>('all');
   
   const pending = appointments.filter(a => a.status === 'pending');
-  const completed = appointments.filter(a => a.status === 'completed');
+  const completedCount = appointments.filter(a => a.status === 'completed').length;
   
-  const today = new Date().toISOString().split('T')[0];
-  const appointmentsToday = appointments.filter(a => a.date === today);
-
   const filteredPending = pending.filter(a => 
     churchFilter === 'all' || a.church === churchFilter
   );
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('¡Copiado al portapapeles!');
+  };
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Bienvenido de nuevo</h1>
-          <p className="text-gray-500 mt-1">Aquí tienes un resumen de los atendimientos de hoy.</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Panel Principal</h1>
+          <p className="text-slate-500 font-medium">Gestión de atendimientos desde Facebook</p>
         </div>
         <button
           onClick={onNew}
-          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95"
+          className="w-full md:w-auto flex items-center justify-center gap-3 bg-[#2b44d3] text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 uppercase tracking-widest text-sm"
         >
           <ICONS.UserPlus />
-          Nuevo Atendimiento
+          Registrar Nuevo
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-              <ICONS.Dashboard />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Pendientes</p>
-              <h3 className="text-2xl font-bold text-gray-900">{pending.length}</h3>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5">
+          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+            <ICONS.Dashboard />
+          </div>
+          <div>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Esperando</p>
+            <h3 className="text-3xl font-black text-slate-900">{pending.length}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-50 text-green-600 rounded-xl">
-              <ICONS.Check />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Completados</p>
-              <h3 className="text-2xl font-bold text-gray-900">{completed.length}</h3>
-            </div>
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5">
+          <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center">
+            <ICONS.Check />
           </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-              <ICONS.History />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Hoy</p>
-              <h3 className="text-2xl font-bold text-gray-900">{appointmentsToday.length}</h3>
-            </div>
+          <div>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Finalizados</p>
+            <h3 className="text-3xl font-black text-slate-900">{completedCount}</h3>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-8 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="font-bold text-gray-900">Atendimientos Recientes</h2>
-            <p className="text-xs text-gray-400 mt-1">Mostrando registros pendientes (Click en nombre para editar)</p>
+            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Atendimientos Pendientes</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Lista de contactos hoy</p>
+            </div>
           </div>
           
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-xs font-medium text-gray-400 whitespace-nowrap">Filtrar por iglesia:</span>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <select 
               value={churchFilter}
               onChange={(e) => setChurchFilter(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 flex-1 sm:flex-none min-w-[150px]"
+              className="w-full sm:w-64 text-xs font-black border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none bg-slate-50 uppercase tracking-wider transition-all"
             >
-              <option value="all">Todas las sedes</option>
+              <option value="all">TODAS LAS SEDES</option>
               {CHURCHES.map(c => (
                 <option key={c.id} value={c.name}>{c.name}</option>
               ))}
@@ -96,61 +85,65 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
           </div>
         </div>
         
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-slate-50">
           {filteredPending.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="inline-block p-4 bg-gray-50 rounded-full mb-4">
+            <div className="p-20 text-center">
+              <div className="inline-block p-6 bg-slate-50 rounded-full mb-4 text-slate-300">
                 <ICONS.Dashboard />
               </div>
-              <p className="text-gray-400">No hay atendimientos pendientes {churchFilter !== 'all' ? 'para esta iglesia' : ''}.</p>
-              {churchFilter === 'all' && (
-                <button onClick={onNew} className="text-blue-600 font-medium mt-2 hover:underline">Comenzar ahora</button>
-              )}
+              <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">No hay personas pendientes</p>
             </div>
           ) : (
-            filteredPending.slice(0, 10).map(apt => (
-              <div key={apt.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-gray-50 transition-colors group">
-                <div className="flex items-start gap-4">
-                  <button 
-                    onClick={() => onEdit(apt)}
-                    className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 group-hover:scale-105 transition-transform"
-                  >
+            filteredPending.map(apt => (
+              <div key={apt.id} className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-colors group">
+                <div className="flex items-start gap-5">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-blue-100 shrink-0">
                     {apt.name.charAt(0)}
-                  </button>
+                  </div>
                   <div>
-                    <button 
-                      onClick={() => onEdit(apt)}
-                      className="text-left"
-                    >
-                      <h4 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors uppercase">{apt.name}</h4>
-                    </button>
-                    <p className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
-                      <span>{apt.phone}</span>
-                      <span className="text-gray-300">•</span>
-                      <span className="text-blue-600 font-medium">{apt.church}</span>
-                    </p>
-                    <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
-                      <span className="flex items-center gap-1">📅 {apt.date}</span>
-                      <span className="flex items-center gap-1">⏰ {apt.time}</span>
+                    <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight group-hover:text-blue-600 transition-colors">
+                      {apt.name}
+                    </h4>
+                    <div className="flex flex-col gap-1 mt-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-500">{apt.phone}</span>
+                        <button 
+                          onClick={() => copyToClipboard(apt.phone)}
+                          className="text-xs font-black text-blue-500 uppercase tracking-tighter hover:underline"
+                        >
+                          Copiar
+                        </button>
+                      </div>
+                      <p className="text-xs font-black text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                        <span className="w-1 h-1 bg-blue-600 rounded-full"></span>
+                        {apt.church}
+                        {apt.neighborhood && <span className="text-slate-400">({apt.neighborhood})</span>}
+                      </p>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <button 
-                    onClick={() => onComplete(apt.id)}
-                    className="px-4 py-2 bg-green-50 text-green-600 rounded-lg text-sm font-semibold hover:bg-green-100 transition-colors flex items-center gap-2"
-                  >
-                    <ICONS.Check /> Finalizar
-                  </button>
+                
+                <div className="flex flex-wrap items-center gap-3">
                   <a 
                     href={`https://wa.me/${apt.phone.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                    title="Enviar mensaje"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-blue-50 text-blue-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-100 transition-all active:scale-95"
                   >
-                    💬
+                    WhatsApp
                   </a>
+                  <button 
+                    onClick={() => onComplete(apt.id)}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-green-600 shadow-lg shadow-green-100 transition-all active:scale-95"
+                  >
+                    <ICONS.Check /> Finalizar
+                  </button>
+                  <button 
+                    onClick={() => onEdit(apt)}
+                    className="p-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200 transition-all"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                  </button>
                 </div>
               </div>
             ))
