@@ -123,7 +123,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
                   required
                   type="text"
                   className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-[#2b44d3] outline-none transition-all font-medium text-black"
-                  placeholder="Ej: Rodrigo Ataide"
+                  placeholder="Ej: Juan"
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
                 />

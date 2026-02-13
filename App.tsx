@@ -99,6 +99,7 @@ const App: React.FC = () => {
 
   // Filtrar atendimientos según el usuario y vistas
   const userAppointments = appointments.filter(a => a.userId === currentUser?.id);
+  const completedCount = userAppointments.filter(a => a.status === 'completed').length;
 
   const filteredHistory = userAppointments.filter(a => 
     historyChurchFilter === 'all' || a.church === historyChurchFilter
@@ -177,11 +178,20 @@ const App: React.FC = () => {
               className={`flex items-center gap-3 p-2 rounded-xl transition-all group hover:bg-gray-50 ${view === 'settings' ? 'bg-blue-50' : ''}`}
             >
               <img src={currentUser.avatar} alt="Perfil" className="w-10 h-10 rounded-full border-2 border-blue-50 bg-gray-100 object-cover" />
-              <div className="overflow-hidden text-left">
+              <div className="overflow-hidden text-left text-black">
                 <p className={`text-xs font-black truncate uppercase ${view === 'settings' ? 'text-blue-600' : 'text-black'}`}>{currentUser.name}</p>
                 <p className="text-[10px] text-gray-400 truncate font-bold">{currentUser.emailOrPhone}</p>
               </div>
             </button>
+
+            <div className="px-2 py-3 bg-blue-50 rounded-xl border border-blue-100">
+               <p className="text-[9px] font-black text-blue-400 uppercase tracking-[0.2em] mb-1">Tu Impacto</p>
+               <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-gray-600 uppercase">Personas Atendidas</span>
+                  <span className="text-sm font-black text-blue-600">{completedCount}</span>
+               </div>
+            </div>
+
             <button 
               onClick={handleLogout}
               className="w-full py-2 text-[10px] font-black text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-2 uppercase tracking-widest"
