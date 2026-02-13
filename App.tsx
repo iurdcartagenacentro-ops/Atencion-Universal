@@ -15,22 +15,45 @@ const App: React.FC = () => {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem('ecochurch_current_user');
-      const savedApps = localStorage.getItem('ecochurch_appointments');
-      
-      if (savedUser && savedUser !== "undefined" && savedUser !== "null") {
-        setCurrentUser(JSON.parse(savedUser));
+    const hydrateData = async () => {
+      try {
+        // Simular un pequeño retraso para una transición suave si es necesario, 
+        // pero aquí lo usamos para asegurar que el DOM esté listo.
+        const savedUser = localStorage.getItem('ecochurch_current_user');
+        const savedApps = localStorage.getItem('ecochurch_appointments');
+        
+        // Validación estricta para evitar errores de parseo con strings como "undefined" o "null"
+        if (savedUser && savedUser !== "undefined" && savedUser !== "null") {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            if (parsedUser && typeof parsedUser === 'object') {
+              setCurrentUser(parsedUser);
+            }
+          } catch (e) {
+            console.warn("Error al parsear usuario guardado, limpiando sesión.");
+            localStorage.removeItem('ecochurch_current_user');
+          }
+        }
+
+        if (savedApps && savedApps !== "undefined" && savedApps !== "null") {
+          try {
+            const parsedApps = JSON.parse(savedApps);
+            if (Array.isArray(parsedApps)) {
+              setAppointments(parsedApps);
+            }
+          } catch (e) {
+            console.warn("Error al parsear atendimientos guardados.");
+          }
+        }
+      } catch (e) {
+        console.error("Fallo crítico en el acceso a LocalStorage", e);
+      } finally {
+        // Aseguramos un tiempo mínimo de carga para evitar parpadeos visuales
+        setTimeout(() => setIsLoaded(true), 800);
       }
-      if (savedApps && savedApps !== "undefined" && savedApps !== "null") {
-        setAppointments(JSON.parse(savedApps));
-      }
-    } catch (e) {
-      console.error("Error cargando datos de LocalStorage", e);
-      localStorage.removeItem('ecochurch_current_user');
-    } finally {
-      setIsLoaded(true);
-    }
+    };
+
+    hydrateData();
   }, []);
 
   const handleLogin = (user: AuthUser) => {
@@ -76,8 +99,27 @@ const App: React.FC = () => {
   };
 
   if (!isLoaded) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-transparent"></div>
+      <div className="relative z-10 flex flex-col items-center space-y-6">
+        <div className="w-20 h-20 bg-blue-600 rounded-[2rem] flex items-center justify-center text-white font-black text-4xl shadow-2xl shadow-blue-500/20 animate-bounce">
+          A
+        </div>
+        <div className="flex flex-col items-center">
+          <h2 className="text-white font-black text-xl uppercase tracking-[0.3em] mb-2">Universal</h2>
+          <div className="w-48 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-500 rounded-full animate-[loading_1.5s_infinite_ease-in-out]"></div>
+          </div>
+        </div>
+        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest animate-pulse">Iniciando Entorno...</p>
+      </div>
+      <style>{`
+        @keyframes loading {
+          0% { width: 0%; transform: translateX(-100%); }
+          50% { width: 100%; transform: translateX(0%); }
+          100% { width: 0%; transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 

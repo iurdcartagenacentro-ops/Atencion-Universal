@@ -9,18 +9,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script>
-        // Prevenir errores "process is not defined" y fallos de dependencias Node en el navegador
-        window.process = { 
-            env: { API_KEY: "" },
-            nextTick: (cb) => setTimeout(cb, 0),
-            browser: true
-        };
+        /**
+         * Polyfill robusto para 'process' requerido por algunos módulos ESM que esperan un entorno Node.
+         * Esto previene errores de ejecución al desplegar en entornos estáticos como Vercel.
+         */
+        (function() {
+            const processShim = {
+                env: { API_KEY: "" },
+                nextTick: function(cb) { setTimeout(cb, 0); },
+                browser: true,
+                version: '',
+                versions: {},
+                argv: [],
+                cwd: function() { return '/'; },
+                stdout: { write: function() {} },
+                stderr: { write: function() {} }
+            };
+            window.process = window.process || processShim;
+        })();
     </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f1f5f9;
             color: #1e293b;
+            margin: 0;
+            padding: 0;
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
@@ -31,6 +45,13 @@
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
+        }
+        @keyframes subtle-zoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        .animate-subtle-zoom {
+            animation: subtle-zoom 10s infinite alternate ease-in-out;
         }
     </style>
     <script type="importmap">
