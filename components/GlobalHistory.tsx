@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Appointment } from '../types';
 import { CHURCHES, ICONS } from '../constants';
@@ -23,8 +24,8 @@ export const GlobalHistory: React.FC<GlobalHistoryProps> = ({ appointments, onEd
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 pb-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="text-3xl font-black text-black uppercase tracking-tight">Reporte General de Atendimientos</h1>
-          <p className="text-gray-500 mt-2 font-medium">Visualización de todos los registros y problemas reportados. (Click en nombre para corregir)</p>
+          <h1 className="text-3xl font-black text-black uppercase tracking-tight">Reporte General del Equipo</h1>
+          <p className="text-gray-500 mt-2 font-medium">Visualización de todos los registros del equipo en tiempo real.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
@@ -77,9 +78,11 @@ export const GlobalHistory: React.FC<GlobalHistoryProps> = ({ appointments, onEd
                     </button>
                     <div className="flex flex-col gap-0.5">
                       <p className="text-sm font-bold text-gray-500">{apt.phone}</p>
-                      {apt.neighborhood && (
-                        <p className="text-xs font-bold text-blue-500 uppercase tracking-tighter">Barrio: {apt.neighborhood}</p>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {apt.neighborhood && (
+                          <p className="text-xs font-bold text-blue-500 uppercase tracking-tighter">Barrio: {apt.neighborhood}</p>
+                        )}
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-2 pt-2">
                       <span className="px-3 py-1 bg-blue-50 text-[#2b44d3] rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-100">
@@ -91,9 +94,14 @@ export const GlobalHistory: React.FC<GlobalHistoryProps> = ({ appointments, onEd
                         {apt.status === 'completed' ? 'Finalizado' : 'Pendiente'}
                       </span>
                     </div>
-                    <div className="pt-3 flex gap-4 text-xs font-bold text-gray-400">
-                      <span className="flex items-center gap-1">📅 {apt.date}</span>
-                      <span className="flex items-center gap-1">⏰ {apt.time}</span>
+                    <div className="pt-3 flex flex-col gap-1 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      <div className="flex gap-4">
+                        <span className="flex items-center gap-1">📅 {apt.date}</span>
+                        <span className="flex items-center gap-1">⏰ {apt.time}</span>
+                      </div>
+                      {apt.userName && (
+                        <span className="text-blue-600 mt-1">👤 Atendido por: {apt.userName}</span>
+                      )}
                     </div>
                   </div>
                 </div>
