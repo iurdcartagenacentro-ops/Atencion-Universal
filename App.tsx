@@ -6,6 +6,7 @@ import { AppointmentForm } from './components/AppointmentForm';
 import { AuthScreen } from './components/AuthScreen';
 import { GlobalHistory } from './components/GlobalHistory';
 import { Settings } from './components/Settings';
+import { TeamActivity } from './components/TeamActivity';
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('dashboard');
@@ -13,6 +14,7 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [selectedTeamUser, setSelectedTeamUser] = useState<string | null>(null);
 
   // Hidratación de datos desde el "Mock DB" (LocalStorage)
   useEffect(() => {
@@ -50,8 +52,6 @@ const App: React.FC = () => {
 
   const saveToGlobalStorage = useCallback((newAppointments: Appointment[]) => {
     setAppointments(newAppointments);
-    // En esta plataforma demo, todos comparten el mismo localStorage 
-    // lo que simula una base de datos global donde todos ven los cambios.
     localStorage.setItem('ecochurch_appointments', JSON.stringify(newAppointments));
   }, []);
 
@@ -62,7 +62,7 @@ const App: React.FC = () => {
       ...data,
       id: Math.random().toString(36).substring(2, 9),
       userId: currentUser.id,
-      userName: currentUser.name, // Registramos quién atendió
+      userName: currentUser.name,
       createdAt: Date.now(),
       status: 'pending'
     };
@@ -101,13 +101,6 @@ const App: React.FC = () => {
         </div>
         <p className="mt-4 text-slate-500 font-black uppercase tracking-[0.2em] text-[10px]">Cargando Base de Datos...</p>
       </div>
-      <style>{`
-        @keyframes loading {
-          0% { width: 0%; transform: translateX(-100%); }
-          50% { width: 100%; transform: translateX(0%); }
-          100% { width: 0%; transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 
@@ -146,6 +139,7 @@ const App: React.FC = () => {
           <NavItem icon={<ICONS.Dashboard />} label="Panel Control" active={view === 'dashboard'} onClick={() => setView('dashboard')} />
           <NavItem icon={<ICONS.UserPlus />} label="Nuevo Contacto" active={view === 'new'} onClick={() => { setEditingAppointment(null); setView('new'); }} />
           <NavItem icon={<ICONS.Report />} label="Reporte Global" active={view === 'all_history'} onClick={() => setView('all_history')} />
+          <NavItem icon={<ICONS.History />} label="Actividad Equipo" active={view === 'team_activity'} onClick={() => { setSelectedTeamUser(null); setView('team_activity'); }} />
         </nav>
 
         <div className="mt-auto pt-8 border-t border-slate-50">
@@ -173,7 +167,8 @@ const App: React.FC = () => {
             appointments={appointments} 
             onNew={() => setView('new')} 
             onEdit={(apt) => { setEditingAppointment(apt); setView('edit'); }} 
-            onComplete={handleCompleteAppointment} 
+            onComplete={handleCompleteAppointment}
+            onSelectUserActivity={(userName) => { setSelectedTeamUser(userName); setView('team_activity'); }}
           />
         )}
         
@@ -196,6 +191,15 @@ const App: React.FC = () => {
           <GlobalHistory 
             appointments={appointments} 
             onEdit={(apt) => { setEditingAppointment(apt); setView('edit'); }} 
+          />
+        )}
+
+        {view === 'team_activity' && (
+          <TeamActivity 
+            appointments={appointments}
+            selectedUser={selectedTeamUser}
+            onBack={() => setView('dashboard')}
+            onEdit={(apt) => { setEditingAppointment(apt); setView('edit'); }}
           />
         )}
         

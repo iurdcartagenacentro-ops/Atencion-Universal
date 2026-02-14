@@ -28,4 +28,4 @@ export interface Church {
   address: string;
 }
 
-export type ViewState = 'dashboard' | 'new' | 'edit' | 'history' | 'all_history' | 'settings';
+export type ViewState = 'dashboard' | 'new' | 'edit' | 'history' | 'all_history' | 'settings' | 'team_activity';

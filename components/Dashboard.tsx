@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Appointment } from '../types';
 import { ICONS, CHURCHES } from '../constants';
@@ -8,9 +7,10 @@ interface DashboardProps {
   onNew: () => void;
   onEdit: (appointment: Appointment) => void;
   onComplete: (id: string) => void;
+  onSelectUserActivity: (userName: string) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdit, onComplete }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdit, onComplete, onSelectUserActivity }) => {
   const [churchFilter, setChurchFilter] = useState<string>('all');
   
   const pending = appointments.filter(a => a.status === 'pending');
@@ -83,18 +83,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
 
       {/* Ranking de Equipo - Visibilidad Global */}
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8">
-        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-6">Actividad del Equipo</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Actividad del Equipo</h2>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-full">Pulsa un usuario para ver su detalle</span>
+        </div>
         <div className="flex flex-wrap gap-4">
           {statsByUser.map(([userName, count]) => (
-            <div key={userName} className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-2xl border border-slate-100">
+            <button 
+              key={userName} 
+              onClick={() => onSelectUserActivity(userName)}
+              className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-2xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/30 transition-all text-left"
+            >
               <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xs font-black">
                 {userName.charAt(0)}
               </div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{userName}</p>
-                <p className="text-sm font-black text-slate-900">{count} <span className="text-[10px] font-bold text-slate-400">Atendimientos</span></p>
+                <p className="text-sm font-black text-slate-900">{count} <span className="text-[10px] font-bold text-slate-400">Registros</span></p>
               </div>
-            </div>
+            </button>
           ))}
           {statsByUser.length === 0 && (
             <p className="text-xs font-bold text-slate-300 italic">No hay actividad registrada aún.</p>
@@ -108,7 +115,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Lista Compartida de Contactos</h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Todos los usuarios ven esta lista</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sincronizado con todos los usuarios</p>
             </div>
           </div>
           
@@ -116,7 +123,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
             <select 
               value={churchFilter}
               onChange={(e) => setChurchFilter(e.target.value)}
-              className="w-full sm:w-64 text-xs font-black border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none bg-slate-50 uppercase tracking-wider transition-all"
+              className="w-full sm:w-64 text-xs font-black border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none bg-slate-50 uppercase tracking-wider transition-all cursor-pointer"
             >
               <option value="all">TODAS LAS SEDES</option>
               {CHURCHES.map(c => (
@@ -162,9 +169,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
                           {apt.neighborhood && <span className="text-slate-400">({apt.neighborhood})</span>}
                         </p>
                         {apt.userName && (
-                          <p className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-widest">
+                          <button 
+                            onClick={() => onSelectUserActivity(apt.userName!)}
+                            className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-widest hover:bg-blue-100 hover:text-blue-600 transition-all"
+                          >
                             👤 Atendido por: {apt.userName}
-                          </p>
+                          </button>
                         )}
                       </div>
                     </div>
