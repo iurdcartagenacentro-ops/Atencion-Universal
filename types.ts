@@ -1,6 +1,7 @@
 export interface Appointment {
   id: string;
   userId: string; // Vinculación con el usuario que lo creó
+  userName?: string; // Nombre del usuario que lo creó para visibilidad global
   name: string;
   phone: string;
   neighborhood: string; // Barrio donde vive
