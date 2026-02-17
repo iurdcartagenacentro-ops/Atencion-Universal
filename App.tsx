@@ -7,6 +7,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { GlobalHistory } from './components/GlobalHistory';
 import { Settings } from './components/Settings';
 import { TeamActivity } from './components/TeamActivity';
+import html2canvas from 'html2canvas';
 
 const syncChannel = new BroadcastChannel('universal_atencion_sync_v2');
 
@@ -50,7 +51,88 @@ const App: React.FC = () => {
     syncChannel.postMessage({ type: 'REFRESH_DATA', payload: newApps });
   }, []);
 
-  // Función para importar datos de otros usuarios (Sincronización manual entre PCs)
+  // Función para exportar el comprobante como imagen
+  const downloadAsImage = async (apt: Appointment) => {
+    const container = document.getElementById('export-container');
+    if (!container) return;
+
+    // Crear el diseño del ticket temporalmente
+    const ticket = document.createElement('div');
+    ticket.style.width = '500px';
+    ticket.style.padding = '40px';
+    ticket.style.background = '#ffffff';
+    ticket.style.fontFamily = "'Inter', sans-serif";
+    ticket.style.border = '1px solid #e2e8f0';
+    ticket.innerHTML = `
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 60px; height: 60px; background: #2b44d3; color: white; border-radius: 15px; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; margin-bottom: 15px; box-shadow: 0 10px 15px -3px rgba(43, 68, 211, 0.3);">A</div>
+        <h2 style="margin: 0; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: -0.025em; font-size: 24px;">Atención Universal</h2>
+        <p style="margin: 5px 0 0; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Comprobante de Registro</p>
+      </div>
+      
+      <div style="border-top: 2px dashed #e2e8f0; border-bottom: 2px dashed #e2e8f0; padding: 30px 0; margin-bottom: 30px;">
+        <div style="margin-bottom: 20px;">
+          <p style="margin: 0; font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Nombre del Contacto</p>
+          <p style="margin: 5px 0 0; font-size: 20px; font-weight: 900; color: #1e293b; text-transform: uppercase;">${apt.name}</p>
+        </div>
+        
+        <div style="display: flex; gap: 40px; margin-bottom: 20px;">
+          <div style="flex: 1;">
+            <p style="margin: 0; font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Teléfono</p>
+            <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #1e293b;">${apt.phone}</p>
+          </div>
+          <div style="flex: 1;">
+            <p style="margin: 0; font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Sede Iglesia</p>
+            <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #2b44d3;">${apt.church}</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 40px; margin-bottom: 20px;">
+          <div style="flex: 1;">
+            <p style="margin: 0; font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Día de Visita</p>
+            <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #1e293b;">${apt.date}</p>
+          </div>
+          <div style="flex: 1;">
+            <p style="margin: 0; font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Horario</p>
+            <p style="margin: 5px 0 0; font-size: 16px; font-weight: 700; color: #1e293b;">${apt.time}</p>
+          </div>
+        </div>
+
+        ${apt.notes ? `
+          <div>
+            <p style="margin: 0; font-size: 10px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Notas / Problemas</p>
+            <p style="margin: 5px 0 0; font-size: 13px; color: #475569; font-style: italic; line-height: 1.5;">"${apt.notes}"</p>
+          </div>
+        ` : ''}
+      </div>
+
+      <div style="text-align: center;">
+        <p style="margin: 0; font-size: 10px; font-weight: 900; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.2em;">Atendido por ${apt.userName || 'Sistema'}</p>
+        <p style="margin: 5px 0 0; font-size: 9px; color: #e2e8f0;">ID: ${apt.id} • ${new Date(apt.createdAt).toLocaleString()}</p>
+      </div>
+    `;
+
+    container.appendChild(ticket);
+    
+    try {
+      const canvas = await html2canvas(ticket, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Mejor calidad
+        logging: false
+      });
+      
+      const image = canvas.toDataURL("image/png");
+      const link = document.createElement('a');
+      link.download = `Atencion_${apt.name.replace(/\s+/g, '_')}_${apt.id}.png`;
+      link.href = image;
+      link.click();
+    } catch (err) {
+      console.error("Error generando imagen", err);
+    } finally {
+      container.removeChild(ticket);
+    }
+  };
+
   const importSharedData = (jsonString: string) => {
     try {
       const imported = JSON.parse(jsonString);
@@ -85,6 +167,10 @@ const App: React.FC = () => {
       status: 'pending'
     };
     saveGlobal([newApt, ...appointments]);
+    
+    // Descargar imagen automáticamente
+    setTimeout(() => downloadAsImage(newApt), 500);
+    
     setView('dashboard');
   };
 
