@@ -1,8 +1,6 @@
-
 import React, { useState, useMemo } from 'react';
 import { Appointment } from '../types';
 import { ICONS, CHURCHES } from '../constants';
-import { generateFollowUpMessage } from '../services/geminiService';
 
 interface DashboardProps {
   appointments: Appointment[];
@@ -14,7 +12,6 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdit, onComplete, onSelectUserActivity }) => {
   const [churchFilter, setChurchFilter] = useState<string>('all');
-  const [aiLoading, setAiLoading] = useState<string | null>(null);
   
   const pending = appointments.filter(a => a.status === 'pending');
   const completedCount = appointments.filter(a => a.status === 'completed').length;
@@ -32,17 +29,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
     return Object.entries(stats).sort((a, b) => b[1] - a[1]);
   }, [appointments]);
 
-  const handleAiMessage = async (apt: Appointment) => {
-    setAiLoading(apt.id);
-    const message = await generateFollowUpMessage(apt.name, apt.church, apt.time, apt.notes);
-    setAiLoading(null);
-    
-    // Abrir WhatsApp con el mensaje generado
-    const encodedMsg = encodeURIComponent(message || '');
-    const whatsappUrl = `https://wa.me/${apt.phone.replace(/\D/g, '')}?text=${encodedMsg}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     alert('¡Copiado!');
@@ -59,7 +45,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tight uppercase">Panel de Atendimientos</h1>
-          <p className="text-slate-500 font-medium">Gestiona leads de Facebook con Inteligencia Artificial</p>
+          <p className="text-slate-500 font-medium">Gestión profesional de contactos y seguimiento</p>
         </div>
         <div className="flex flex-wrap gap-3 w-full lg:w-auto">
           <button
@@ -79,13 +65,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5">
           <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
             <ICONS.Dashboard />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">En Espera</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Pendientes</p>
             <h3 className="text-3xl font-black text-slate-900">{pending.length}</h3>
           </div>
         </div>
@@ -94,17 +80,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
             <ICONS.Check />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Finalizados</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Finalizados</p>
             <h3 className="text-3xl font-black text-slate-900">{completedCount}</h3>
-          </div>
-        </div>
-        <div className="bg-slate-900 p-6 rounded-3xl shadow-xl flex items-center gap-5 text-white">
-          <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center">
-             <ICONS.Sparkles />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">IA Activa</p>
-            <h3 className="text-2xl font-black">Gemini 3.0</h3>
           </div>
         </div>
       </div>
@@ -114,7 +91,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Actividad por Colaborador</h2>
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Haz clic para ver sus conversaciones específicas</p>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Colaboradores registrados en el sistema</p>
           </div>
         </div>
         
@@ -134,6 +111,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
               </div>
             </button>
           ))}
+          {statsByUser.length === 0 && (
+            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">Esperando actividad del equipo...</p>
+          )}
         </div>
       </div>
 
@@ -141,7 +121,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
         <div className="p-8 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Personas Pendientes</h2>
-            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">Usa la IA para redactar mensajes de seguimiento</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 italic">Todos los colaboradores ven esta lista</p>
           </div>
           
           <select 
@@ -186,7 +166,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
                         </span>
                         {apt.userName && (
                           <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md uppercase tracking-widest">
-                            👤 Atendido por: {apt.userName}
+                            👤 Por: {apt.userName}
                           </span>
                         )}
                       </div>
@@ -195,13 +175,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ appointments, onNew, onEdi
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-3">
-                  <button 
-                    disabled={aiLoading === apt.id}
-                    onClick={() => handleAiMessage(apt)}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg shadow-slate-200 disabled:opacity-50"
+                  <a 
+                    href={`https://wa.me/${apt.phone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-green-50 text-green-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-green-600 hover:text-white transition-all shadow-sm"
                   >
-                    {aiLoading === apt.id ? 'Generando...' : <><ICONS.Sparkles /> Mensaje IA</>}
-                  </button>
+                    WhatsApp
+                  </a>
                   <button 
                     onClick={() => onComplete(apt.id)}
                     className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-[#2b44d3] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all"
