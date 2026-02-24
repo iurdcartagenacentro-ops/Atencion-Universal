@@ -16,66 +16,35 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAuth = (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Simulación de proceso de autenticación con persistencia en localStorage
-    setTimeout(() => {
-      const storedUsers = JSON.parse(localStorage.getItem('ecochurch_users') || '[]');
-      
-      if (mode === 'login') {
-        // Buscar usuario por correo o celular
-        const user = storedUsers.find((u: any) => u.emailOrPhone === formData.identifier);
-        
-        if (user) {
-          // En una app real validaríamos el password aquí
-          const authUser: AuthUser = {
-            id: user.id,
-            name: user.name,
-            emailOrPhone: user.emailOrPhone,
-            role: user.role || 'voluntario',
-            avatar: user.avatar
-          };
-          onLogin(authUser);
-        } else {
-          setError('Usuario no encontrado. Verifique sus datos o regístrese.');
-        }
-      } else {
-        // Modo Registro
-        // Verificar si ya existe
-        const exists = storedUsers.some((u: any) => u.emailOrPhone === formData.identifier);
-        if (exists) {
-          setError('Este correo o celular ya está registrado.');
-          setLoading(false);
-          return;
-        }
-
-        const newId = Math.random().toString(36).substring(2, 9);
-        const newUser = {
-          id: newId,
+    try {
+      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: formData.name,
-          emailOrPhone: formData.identifier,
-          password: formData.password,
-          role: 'pastor', // Default role for demo
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.identifier}`
-        };
+          identifier: formData.identifier,
+          password: formData.password
+        })
+      });
 
-        storedUsers.push(newUser);
-        localStorage.setItem('ecochurch_users', JSON.stringify(storedUsers));
+      const data = await response.json();
 
-        const authUser: AuthUser = {
-          id: newUser.id,
-          name: newUser.name,
-          emailOrPhone: newUser.emailOrPhone,
-          role: 'pastor',
-          avatar: newUser.avatar
-        };
-        onLogin(authUser);
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en la autenticación');
       }
+
+      onLogin(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

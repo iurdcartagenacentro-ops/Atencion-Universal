@@ -22,15 +22,43 @@ const App: React.FC = () => {
 
   // Cargar datos
   useEffect(() => {
-    const init = () => {
+    const init = async () => {
       const savedUser = localStorage.getItem('ecochurch_current_user');
-      const savedApps = localStorage.getItem('ecochurch_appointments');
       if (savedUser) setCurrentUser(JSON.parse(savedUser));
-      if (savedApps) setAppointments(JSON.parse(savedApps));
+      
+      try {
+        const response = await fetch('/api/appointments');
+        if (response.ok) {
+          const data = await response.json();
+          setAppointments(data);
+        }
+      } catch (err) {
+        console.error("Error loading appointments", err);
+      }
+      
       setTimeout(() => setIsLoaded(true), 600);
     };
     init();
   }, []);
+
+  // Sincronización periódica (opcional, para ver cambios de otros dispositivos)
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/appointments');
+        if (response.ok) {
+          const data = await response.json();
+          setAppointments(data);
+        }
+      } catch (err) {
+        console.error("Error syncing appointments", err);
+      }
+    }, 10000); // Cada 10 segundos
+    
+    return () => clearInterval(interval);
+  }, [currentUser]);
 
   // Sincronizar entre pestañas
   useEffect(() => {
@@ -156,35 +184,71 @@ const App: React.FC = () => {
     setView('dashboard');
   };
 
-  const handleCreateAppointment = (data: any) => {
+  const handleCreateAppointment = async (data: any) => {
     if (!currentUser) return;
-    const newApt: Appointment = {
+    const newAptData = {
       ...data,
-      id: Math.random().toString(36).substring(2, 9),
       userId: currentUser.id,
       userName: currentUser.name,
-      createdAt: Date.now(),
-      status: 'pending'
     };
-    saveGlobal([newApt, ...appointments]);
-    
-    // Descargar imagen automáticamente
-    setTimeout(() => downloadAsImage(newApt), 500);
-    
-    setView('dashboard');
+
+    try {
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAptData)
+      });
+      
+      if (response.ok) {
+        const newApt = await response.json();
+        setAppointments(prev => [newApt, ...prev]);
+        
+        // Descargar imagen automáticamente
+        setTimeout(() => downloadAsImage(newApt), 500);
+        setView('dashboard');
+      }
+    } catch (err) {
+      console.error("Error creating appointment", err);
+      alert("Error al guardar el atendimiento");
+    }
   };
 
-  const handleUpdateAppointment = (data: any) => {
+  const handleUpdateAppointment = async (data: any) => {
     if (!editingAppointment) return;
-    const updated = appointments.map(a => a.id === editingAppointment.id ? { ...a, ...data } : a);
-    saveGlobal(updated);
-    setEditingAppointment(null);
-    setView('dashboard');
+    
+    try {
+      const response = await fetch(`/api/appointments/${editingAppointment.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      if (response.ok) {
+        const updatedApt = await response.json();
+        setAppointments(prev => prev.map(a => a.id === updatedApt.id ? updatedApt : a));
+        setEditingAppointment(null);
+        setView('dashboard');
+      }
+    } catch (err) {
+      console.error("Error updating appointment", err);
+    }
   };
 
-  const handleComplete = (id: string) => {
-    const updated = appointments.map(a => a.id === id ? { ...a, status: 'completed' as const } : a);
-    saveGlobal(updated);
+  const handleComplete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/appointments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' })
+      });
+      
+      if (response.ok) {
+        const updatedApt = await response.json();
+        setAppointments(prev => prev.map(a => a.id === id ? updatedApt : a));
+      }
+    } catch (err) {
+      console.error("Error completing appointment", err);
+    }
   };
 
   if (!isLoaded) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white font-black uppercase tracking-[0.3em] text-xs animate-pulse">Iniciando Sistema Global...</div>;
